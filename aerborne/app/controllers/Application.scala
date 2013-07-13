@@ -42,7 +42,6 @@ object Application extends Controller {
 
   def evaluatePosSequence = Action(parse.tolerantText) { implicit request =>
     Async {
-      val bad = Promise.pure(BadRequest())
       val data = jerkson.Json.parse[Seq[Seq[Seq[Int]]]](request.body)
       val positionStokes: Seq[Seq[Position]] = data flatMap {stroke =>
         //x array and y array
@@ -57,7 +56,10 @@ object Application extends Controller {
           case _ => None
         }
       }
-      bad
+      positionStokes.length match {
+        case 0 => Promise.pure(BadRequest("None of the strokes provided were valid"))
+        case _ => latex(positionStokes) map {s => Ok(s)}
+      }
     }
   }
 
@@ -79,7 +81,7 @@ object Application extends Controller {
       Map("application" -> Seq("webdemo.equation"),
       "equationInput" -> Seq((Json.stringify(Json.obj(
       "resultTypes" -> Json.arr("LATEX"),
-      "components" -> makeXYsJson(positions)
+      "components" -> makeXYsJson(positionStorkes)
       )))),
       "apiKey" -> Seq("f3469740-d247-11e1-acbf-0025648c5362")
       )
@@ -90,14 +92,14 @@ object Application extends Controller {
   }
 
   private def makeXYsJson(positionStorkes: Seq[Seq[Position]]): Seq[JsObject] = positionStorkes map { stroke =>
-    val (xs, ys) = stroke map {pos =>
-      (pos.x,pos.y)
-    }
+    val (xs, ys) = stroke.map {pos =>
+      (pos.x, pos.y)
+    }.unzip
     Json.obj(
-      "y" -> Json.arr(pos.y),
-      "x" -> Json.arr(pos.x),
+      "y" -> ys,
+      "x" -> xs,
       "type" -> "stroke"
     )
-  }}
+  }
   
 }
