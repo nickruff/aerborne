@@ -21,7 +21,7 @@
 			</div>
 		</div>
 		<input type='button' name='Clear' value='Clear' onclick='clearPage();'></input>
-		<input type='button' name='Eval' value='Eval' onclick='sendStrokes();'></input>
+		<input type='button' name='Eval' value='Eval' onclick='sendStrokes(sendStrokeCallback);'></input>
 		<div id='container' class='fill'>
 		</div>
 		<script src="http://js.leapmotion.com/0.2.0-beta3/leap.js"></script>
@@ -243,14 +243,15 @@ function sendStrokes(fun) {
     });
         
     request.done(function(latex) {
-        console.log(latex);
-        $("#overlay").text("$"+latex.result.results[0].value+"$");
+    	var latexString = latex.result.results[0].value.replace(/\s+/g, '');
+        console.log(latexString);
+        $("#overlay").text("$"+latexString+"$");
         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"overlay"]);
         var url = 'http://localhost:9000/evallatex';
         var request = $.ajax({
 	        url: url,
 	        type: "POST",
-	        data: JSON.stringify(latex.result.results[0].value),
+	        data: JSON.stringify(latexString),
 	        dataType: "json"
 	    });
 	    request.done(fun);
@@ -302,7 +303,12 @@ function sendStrokeCallBack(data){
 	  if (data[0].title.toLowerCase().indexOf("input") >= 0 && data.length > 1) {
 	  	idx = 1;
 	  }
-	  ctx.fillText(data[idx].result, a+30, b+15);
+	  var yjump = 15;
+	  //ctx.fillText(data[idx].result, a+30, b+yjump);
+	  for (; idx<data.length; idx++) {
+	  	ctx.fillText(data[idx].result, a+30, b+yjump);
+	  	yjump += 40;
+	  }
 
 	  relpos = getPosRelCanvas((maxx+minx)/2,miny-10);
   	  $("#overlay").css("left",relpos[0]).css("top",relpos[1]).css("position","absolute").show();
