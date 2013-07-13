@@ -18,15 +18,6 @@ object Application extends Controller {
     Ok(views.html.index("Your new application is ready."))
   }
 
-  def checkPreFlight = Action {
-    Ok.withHeaders(
-      "Access-Control-Allow-Origin" -> "*",   // Need to add the correct domain in here!!
-      "Access-Control-Allow-Methods" -> "POST", // Only allow POST
-      "Access-Control-Max-Age" -> "300",  // Cache response for 5 minutes
-      "Access-Control-Allow-Headers" -> "Origin, X-Requested-With, Content-Type, Accept" // Ensure this header is also allowed!
-    )
-  }
-
   def eventSocket = WebSocket.using[String] { request =>
     // Log events to the console
     val in = Iteratee.foreach[String](content =>
@@ -45,12 +36,7 @@ object Application extends Controller {
     Async {
         try {
           val strokes = jerkson.Json.parse[Seq[Seq[Position]]](request.body)
-          latex(strokes) map {s => Ok(s).withHeaders(
-              "Access-Control-Allow-Origin" -> "*",   // Need to add the correct domain in here!!
-              "Access-Control-Allow-Methods" -> "POST", // Only allow POST
-              "Access-Control-Max-Age" -> "300",  // Cache response for 5 minutes
-              "Access-Control-Allow-Headers" -> "Origin, X-Requested-With, Content-Type, Accept" // Ensure this header is also allowed!
-          )}
+          latex(strokes) map {s => Ok(s)}
         } catch {
           case e: Exception =>
             Logger.warn(e.toString)

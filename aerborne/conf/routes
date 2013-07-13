@@ -6,7 +6,6 @@
 GET     /                           controllers.Application.index
 GET     /eventsocket                controllers.Application.eventSocket
 POST    /evalposseq                 controllers.Application.evaluatePosSequence
-GET     /first                      controllers.Application.checkPreFlight
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
