@@ -90,6 +90,9 @@ function clearPage() {
 
 	// clear strokes
 	strokes = [];
+
+	// clears overlay
+	$("#overlay").hide();
 }
 
 function smallCircle(x, y, color, radius) {
@@ -198,7 +201,9 @@ Leap.loop(controllerOptions, function(frame, done) {
     		// Right
     		if (frame.gestures[i].direction[0] > 0.7) {
     			// swipe right code here
-    			clearPage();
+    			if (strokes.length > 0) {
+    				sendStrokes(sendStrokeCallBack);
+    			}
     		}
     	}
     }
@@ -260,50 +265,49 @@ function getPosRelPage(x,y) {
 	return [x - width/2, y - height/2];
 }
 
-document.onkeydown = function(event) {
-	var key_id = event.keyCode;
-	//alert("pressed "+key_id);
-	if (key_id == 90) { // z
-		resumeDrawing();
-		$("#overlay").hide();
+function sendStrokeCallBack(data){
+	var minx = strokes[0][0].x, miny = strokes[0][0].y, maxx = strokes[0][1].x, maxy = strokes[0][1].y;
+	for (var i = 0; i < strokes.length; i++) {
+	    var stroke = strokes[i];
+	    for (var j = 0; j < stroke.length; j++) {
+	        var x = stroke[j].x;
+	        var y = stroke[j].y;
+	        if (x < minx) {
+	            minx = x;
+	        }
+	        if (x > maxx) {
+	            maxx = x;
+	        }
+	        if (y < miny) {
+	            miny = y;
+	        }
+	        if (y > maxy) {
+	            maxy = y;
+	        }
+	    }
 	}
-	else if (key_id == 67) { //c
-		clearPage();
-		$("#overlay").hide();
-	}
-}
-document.onkeyup = function(event) {
-	var key_id = event.keyCode;
-	if (key_id == 90) { //z
-		stopDrawing();
-	} else if (key_id == 83)  { //s
-		// find bounding box on strokes
-        var minx = strokes[0][0].x, miny = strokes[0][0].y, maxx = strokes[0][1].x, maxy = strokes[0][1].y;
-        for (var i = 0; i < strokes.length; i++) {
-            var stroke = strokes[i];
-            for (var j = 0; j < stroke.length; j++) {
-                var x = stroke[j].x;
-                var y = stroke[j].y;
-                if (x < minx) {
-                    minx = x;
-                }
-                if (x > maxx) {
-                    maxx = x;
-                }
-                if (y < miny) {
-                    miny = y;
-                }
-                if (y > maxy) {
-                    maxy = y;
-                }
-            }
-        }
-        console.log(minx,miny,maxx,maxy);
-        var a = maxx + 30;
-        var b = (maxy + miny)/2;
+	console.log(minx,miny,maxx,maxy);
+	var a = maxx + 30;
+	var b = (maxy + miny)/2;
+  	
+	  ctx.textBaseline = "10px";
+	  ctx.font = 'italic 30pt Calibri';
+	  ctx.color = 'black';
+	  ctx.fillStyle = '#000000';
 
+	  var idx = 0;
 
-        var ai = a;
+	  // if data[0].title contains input, skip to 1 if it exists
+	  console.log()
+	  if (data[0].title.toLowerCase().indexOf("input") >= 0 && data.length > 1) {
+	  	idx = 1;
+	  }
+	  ctx.fillText(data[idx].result, a+30, b+15);
+
+	  relpos = getPosRelCanvas((maxx+minx)/2,miny-10);
+  	  $("#overlay").css("left",relpos[0]).css("top",relpos[1]).css("position","absolute").show();
+
+  	  var ai = a;
         window.requestAnimFrame = (function(callback) {
 	        return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
 	        function(callback) {
@@ -311,27 +315,7 @@ document.onkeyup = function(event) {
 	        };
 	      })();
 
-	      // uncomment this block
-	      relpos = getPosRelCanvas((maxx+minx)/2,miny-10);
-		  $("#overlay").css("left",relpos[0]).css("top",relpos[1]).css("position","absolute").show();
-		  $("#overlay").text("$\\frac{7}{3}$");
-		  MathJax.Hub.Queue(["Typeset",MathJax.Hub,"overlay"]);
-
-
-	      sendStrokes(function(data){
-			  lol = data
-			  console.log(data, a+30, b);
-			  ctx.textBaseline = "10px";
-			  ctx.font = 'italic 30pt Calibri';
-			  ctx.color = 'black';
-			  ctx.fillStyle = '#000000';
-			  ctx.fillText(data[0].result, a+30, b+15);
-
-			  relpos = getPosRelCanvas((maxx+minx)/2,miny-10);
-		  	  $("#overlay").css("left",relpos[0]).css("top",relpos[1]).css("position","absolute").show();
-		  });
-
-	      function animate() {
+  	  function animate() {
 
 	        // update
 
@@ -363,6 +347,62 @@ document.onkeyup = function(event) {
 	    	}
 	      }
 	      animate();
+  }
+
+document.onkeydown = function(event) {
+	var key_id = event.keyCode;
+	//alert("pressed "+key_id);
+	if (key_id == 90) { // z
+		resumeDrawing();
+		$("#overlay").hide();
+	}
+	else if (key_id == 67) { //c
+		clearPage();
+	}
+}
+document.onkeyup = function(event) {
+	var key_id = event.keyCode;
+	if (key_id == 90) { //z
+		stopDrawing();
+	} else if (key_id == 83)  { //s
+		// find bounding box on strokes
+        
+		var minx = strokes[0][0].x, miny = strokes[0][0].y, maxx = strokes[0][1].x, maxy = strokes[0][1].y;
+	for (var i = 0; i < strokes.length; i++) {
+	    var stroke = strokes[i];
+	    for (var j = 0; j < stroke.length; j++) {
+	        var x = stroke[j].x;
+	        var y = stroke[j].y;
+	        if (x < minx) {
+	            minx = x;
+	        }
+	        if (x > maxx) {
+	            maxx = x;
+	        }
+	        if (y < miny) {
+	            miny = y;
+	        }
+	        if (y > maxy) {
+	            maxy = y;
+	        }
+	    }
+	}
+	console.log(minx,miny,maxx,maxy);
+	var a = maxx + 30;
+	var b = (maxy + miny)/2;
+
+        
+
+	      // uncomment this block
+	      //relpos = getPosRelCanvas((maxx+minx)/2,miny-10);
+		  //$("#overlay").css("left",relpos[0]).css("top",relpos[1]).css("position","absolute").show();
+		  //$("#overlay").text("$\\frac{7}{3}$");
+		  //MathJax.Hub.Queue(["Typeset",MathJax.Hub,"overlay"]);
+
+
+	      sendStrokes(sendStrokeCallBack);
+
+	      
 
 		
 	}
