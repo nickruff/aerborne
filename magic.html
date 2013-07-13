@@ -195,7 +195,7 @@ Leap.loop(controllerOptions, function(frame, done) {
     for (var i=0; i<frame.gestures.length; i++) {
     	if (frame.gestures[i].type=="swipe") {
     		// Down
-    		if (frame.gestures[i].direction[1] < -0.7){
+    		if (frame.gestures[i].direction[1] < -0.5){
     			clearPage();
     		}
     		// Right
@@ -246,6 +246,7 @@ function sendStrokes(fun) {
     	var latexString = latex.result.results[0].value.replace(/\s+/g, '');
         console.log(latexString);
         $("#overlay").text("$"+latexString+"$");
+        latexString = latexString.replace(/[{}]/g, '');
         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"overlay"]);
         var url = 'http://localhost:9000/evallatex';
         var request = $.ajax({
