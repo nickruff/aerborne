@@ -371,46 +371,9 @@ document.onkeyup = function(event) {
 	if (key_id == 90) { //z
 		stopDrawing();
 	} else if (key_id == 83)  { //s
-		// find bounding box on strokes
-
-		var minx = strokes[0][0].x, miny = strokes[0][0].y, maxx = strokes[0][1].x, maxy = strokes[0][1].y;
-	for (var i = 0; i < strokes.length; i++) {
-	    var stroke = strokes[i];
-	    for (var j = 0; j < stroke.length; j++) {
-	        var x = stroke[j].x;
-	        var y = stroke[j].y;
-	        if (x < minx) {
-	            minx = x;
-	        }
-	        if (x > maxx) {
-	            maxx = x;
-	        }
-	        if (y < miny) {
-	            miny = y;
-	        }
-	        if (y > maxy) {
-	            maxy = y;
-	        }
-	    }
-	}
-	console.log(minx,miny,maxx,maxy);
-	var a = maxx + 30;
-	var b = (maxy + miny)/2;
-
-
-
-	      // uncomment this block
-	      //relpos = getPosRelCanvas((maxx+minx)/2,miny-10);
-		  //$("#overlay").css("left",relpos[0]).css("top",relpos[1]).css("position","absolute").show();
-		  //$("#overlay").text("$\\frac{7}{3}$");
-		  //MathJax.Hub.Queue(["Typeset",MathJax.Hub,"overlay"]);
-
 
 	      sendStrokes(sendStrokeCallBack);
-
-
-
-
+		
 	}
 }
 </script>
