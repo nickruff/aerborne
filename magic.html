@@ -178,7 +178,7 @@ function sendStrokes() {
     var request = $.ajax({
         url: url,
         type: "POST",
-        data: {data : strokes},
+        data: {data : JSON.stringify(strokes)},
         dataType: "json"
     });
         
