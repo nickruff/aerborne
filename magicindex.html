@@ -1,0 +1,437 @@
+<html>
+	<head>
+		<title>Aerbourne</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="ui/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <style>
+        .flex {position:relative;width:850px;min-height:300px;margin:0 auto;border:0px solid red;margin-top:10px;}
+        .flex a {background-color:white;display:block;width:100px;height:100px;border-radius:8px;position:absolute;background-repeat:no-repeat;background-position:center;border:3px solid white;cursor:pointer;text-align:left;text-shadow:1px 1px 20px #000;color:white;font-size:18px;font-weight:bold;text-indent:10px;line-height:30px;}
+        [bg=a] {background-image:url(http://farm8.staticflickr.com/7013/6448917381_0b754e86fb_z.jpg);}
+    </style>
+		<style type="text/css" media="screen">
+			html, body {
+				height: 100%;
+			}
+			#fill {
+				min-height: 100%;
+			}
+
+			.hero-unit {
+				padding:20px;
+				margin-bottom: 10px;
+			}
+
+			.hero-unit h1 {
+				font-size: 40px;
+				margin-top: 3px;
+			}
+
+			.well-large {
+				padding: 16px;
+				margin-bottom: 10px;
+				margin-top: 10px;
+			}
+		</style>
+	</head>
+	<body>
+
+
+		<div class="container">
+      <div class="hero-unit">
+        <h1 style="text-align:center;">AerLab!</h1>
+          <div class="well well-large" id="latprev" style = "text-align:center;">
+          	$\LaTeX$
+         </div>
+         <div class="row-fluid" style="text-align:center;" id = "lat">
+            <pre>$\LaTeX$</pre>
+         </div>
+      </div>
+
+      <div class="row-fluid">
+        <div class="span9">
+          <!--<div class="canvas:container">
+          </div>-->
+          <div id='container' class='fill'>
+			<div id="overlay" style="display:none;font-size: 500%;color:#eee;opacity:0.7;">
+				$\frac{5}{3}$
+			</div>
+	      </div>
+        </div>
+        <div class="span3">
+          <!--<div class="equals:render">
+          </div>-->
+          <!--<div class="flipbox-container">
+              <div class="flipbox flex">
+                  <a bg="a" style="left:0px;top:0px;width:250px;height:125px;" width="325" height="175">Title</a>
+              </div>
+          </div>-->
+        </div>
+      </div>
+    </div>
+
+		<div id='logger'></div>
+		
+		<input type='button' name='Clear' value='Clear' onclick='clearPage();'></input>
+		<input type='button' name='Eval' value='Eval' onclick='sendStrokes(sendStrokeCallback);'></input>
+		<div id='container' class='fill'>
+		</div>
+		<script src="http://js.leapmotion.com/0.2.0-beta3/leap.js"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
+		<script src="ui/js/d3.js"> </script>
+
+		<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+		<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+		<script>
+// Setup Leap loop with frame callback function
+var controllerOptions = { enableGestures: true },
+    width = 1200,
+    height = 500,
+    canvas = d3.select('div#container')
+        .append('canvas')
+        .attr('width', width)
+        .attr('height', height).node(),
+    ctx = canvas.getContext('2d'),
+    before = {},
+    after = {},
+    active_finger_id = -1,
+    last_log = -1,
+    num_log = 0,
+    draw_bool = false,
+    eraseX = -1,
+    eraseY = -1,
+    strokes = [],
+    curStroke = [],
+    color = d3.scale.category20();
+
+ctx.lineWidth = 3;
+ctx.translate(width/2, height/2);
+
+function dlog(txt) {
+	if (txt == last_log) return;
+	last_log = txt;
+	if (num_log < 80) {
+		txt += ",";
+		num_log++;
+	} else {
+		txt += "<BR/>";
+		num_log = 0;
+	}
+	//document.getElementById("logger").innerHTML += txt;
+	//console.log(txt);
+}
+
+function clearPage() {
+	// Store the current transformation matrix
+	ctx.save();
+
+	// Use the identity matrix while clearing the canvas
+	ctx.setTransform(1, 0, 0, 1, 0, 0);
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+	// Restore the transform
+	ctx.restore();
+
+	// clear strokes
+	strokes = [];
+
+	// clears overlay
+	$("#overlay").hide();
+}
+
+function smallCircle(x, y, color, radius) {
+	ctx.beginPath();
+	ctx.arc(x, y, radius, 0, 2*Math.PI, false);
+	ctx.fillStyle = ctx.strokeStyle = color;
+	ctx.fill();
+	ctx.stroke();
+}
+
+function drawCursor() {
+	smallCircle(eraseX, eraseY, 'gray', 3);
+}
+
+function eraseLastCursor() {
+	smallCircle(eraseX, eraseY, 'white', 4);
+}
+
+function drawStroke(startX, startY, endX, endY) {
+	ctx.beginPath();
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(endX, endY);
+    ctx.stroke();
+    if (curStroke.length == 0) {
+    	curStroke.push({x:startX, y:startY});
+    }
+    curStroke.push({x:endX, y:endY});
+}
+
+function redrawStroke(stroke) {
+	if (stroke.length <= 0) {
+		return;
+	}
+	for (var i = 0; i < stroke.length-1; i++) {
+		ctx.beginPath();
+		ctx.moveTo(stroke[i].x,stroke[i].y);
+		ctx.lineTo(stroke[i+1].x,stroke[i+1].y);
+		ctx.stroke();
+	}
+}
+
+function redrawStrokes() {
+	ctx.strokeStyle = 'black';
+	for (var i = 0; i < strokes.length; i++) {
+		redrawStroke(strokes[i]);
+	}
+}
+
+function draw() {
+    var a, b;
+    if (!draw_bool) {
+        // erase circle centered on eraseX, eraseY
+        eraseLastCursor();
+        //redrawStrokes();
+    }
+    for (var id in after) {
+        b = before[id],
+        a = after[id];
+        if (active_finger_id < 0) {
+        	active_finger_id = id;
+        	dlog("active_finger_id:"+active_finger_id);
+        }
+
+    	// redraw everything here
+        if (active_finger_id == id && b) {
+        	ctx.strokeStyle = color(id);
+        	var startX = b.tipPosition[0],
+        		startY = -b.tipPosition[1],
+        		endX = a.tipPosition[0],
+        		endY = -a.tipPosition[1];
+        	if (draw_bool) {
+        		drawStroke(startX, startY, endX, endY);
+        		eraseX = eraseY = -1;
+        	} else {
+        		eraseX = endX;
+        		eraseY = endY;
+        		// draw circle centered on eraseX, eraseY
+        		drawCursor();
+        	}
+
+    	}
+    	if (!b) {
+    		active_finger_id = -1;
+    	}
+    }
+
+    before = after;
+
+    return true;
+}
+
+Leap.loop(controllerOptions, function(frame, done) {
+    after = {};
+    for (var i = 0; i < frame.pointables.length; i++) {
+    	var tempid = frame.pointables[i].id;
+        after[tempid] = frame.pointables[i];
+        //dlog(tempid);
+    }
+    for (var i=0; i<frame.gestures.length; i++) {
+    	if (frame.gestures[i].type=="swipe") {
+    		// Down
+    		if (frame.gestures[i].direction[1] < -0.5){
+    			clearPage();
+    		}
+    		// Right
+    		if (frame.gestures[i].direction[0] > 0.5) {
+    			// swipe right code here
+    			if (strokes.length > 0) {
+    				sendStrokes(sendStrokeCallBack);
+    			}
+    		}
+    	}
+    }
+    draw();
+    done();
+});
+
+function stopDrawing() {
+	draw_bool = false;
+	eraseLastCursor();
+	before = after = {};
+	if (curStroke.length > 0) {
+		strokes.push(curStroke);
+		console.log("Pushing Stroke:");
+		console.log(curStroke);
+		curStroke = [];
+		console.log("strokes:");
+		console.log(strokes);
+	}
+}
+
+function resumeDrawing() {
+	draw_bool = true;
+	eraseLastCursor();
+	redrawStrokes();
+}
+
+function sendStrokes(fun) {
+	redrawStrokes();
+	stopDrawing();
+	var url = 'http://localhost:9000/evalposseq';
+    var request = $.ajax({
+        url: url,
+        type: "POST",
+        data: JSON.stringify(strokes),
+        dataType: "json"
+    });
+
+    request.done(function(latex) {
+    	var latexString = latex.result.results[0].value;//.replace(/\s+/g, '');
+        console.log(latexString);
+
+        $("#overlay").text("$"+latexString+"$");
+        $("#latprev").text("$"+latexString+"$");
+        $("#lat").text("$"+latexString+"$");
+        latexString = latexString.replace(/[{}]/g, '');
+        MathJax.Hub.Queue(["Typeset",MathJax.Hub,"overlay"]);
+         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"latprev"]);
+        var url = 'http://localhost:9000/evallatex';
+        var request = $.ajax({
+	        url: url,
+	        type: "POST",
+	        data: (latex.result.results[1].value),
+	        dataType: "json"
+	    });
+	    request.done(fun);
+    });
+}
+
+function getPosRelCanvas(x,y) {
+	return [canvas.offsetLeft + width/2 + x, canvas.offsetTop + height/2 + y];
+}
+
+function getPosRelPage(x,y) {
+	return [x - width/2, y - height/2];
+}
+
+function sendStrokeCallBack(data){
+	var minx = strokes[0][0].x, miny = strokes[0][0].y, maxx = strokes[0][1].x, maxy = strokes[0][1].y;
+	for (var i = 0; i < strokes.length; i++) {
+	    var stroke = strokes[i];
+	    for (var j = 0; j < stroke.length; j++) {
+	        var x = stroke[j].x;
+	        var y = stroke[j].y;
+	        if (x < minx) {
+	            minx = x;
+	        }
+	        if (x > maxx) {
+	            maxx = x;
+	        }
+	        if (y < miny) {
+	            miny = y;
+	        }
+	        if (y > maxy) {
+	            maxy = y;
+	        }
+	    }
+	}
+	console.log(minx,miny,maxx,maxy);
+	var a = maxx + 30;
+	var b = (maxy + miny)/2;
+
+	  ctx.textBaseline = "10px";
+	  ctx.font = 'italic 20pt Calibri';
+	  ctx.color = 'black';
+	  ctx.fillStyle = '#000000';
+
+	  var idx = 0;
+
+	  // if data[0].title contains input, skip to 1 if it exists
+	  console.log()
+	  if (data[0].title.toLowerCase().indexOf("input") >= 0 && data.length > 1) {
+	  	idx = 1;
+	  }
+	  var yjump = 15;
+	  //ctx.fillText(data[idx].result, a+30, b+yjump);
+	  for (; idx<data.length; idx++) {
+	  	ctx.fillText(data[idx].result, a+30, b+yjump);
+	  	yjump += 40;
+	  }
+
+	  relpos = getPosRelCanvas((maxx+minx)/2 - 20,(miny+maxy)/2 - 20);
+  	  $("#overlay").css("left",relpos[0]).css("top",relpos[1]).css("position","absolute").show();
+
+  	  var ai = a;
+        window.requestAnimFrame = (function(callback) {
+	        return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
+	        function(callback) {
+	          window.setTimeout(callback, 1000 / 60);
+	        };
+	      })();
+
+  	  function animate() {
+
+	        // update
+
+	        // clear
+	        //ctx.clearRect(a, b, a+20, b+10);
+
+			ctx.color = 'black';
+			ctx.fillStyle = '#000000';
+	        // draw stuff
+	        if (ai <= a + 20) {
+		        ctx.beginPath();
+		        ctx.moveTo(a,b);
+		        ctx.lineTo(ai,b);
+		        ctx.stroke();
+		    } else {
+
+		        ctx.beginPath();
+		        ctx.moveTo(a,b+10);
+		        ctx.lineTo(ai-20,b+10);
+		        ctx.stroke();
+		    }
+
+	        ai += 1;
+	        // request new frame
+	        if (ai <= a + 40) {
+		        requestAnimFrame(function() {
+		          animate();
+		        });
+	    	}
+	      }
+	      animate();
+  }
+
+document.onkeydown = function(event) {
+	var key_id = event.keyCode;
+	//alert("pressed "+key_id);
+	if (key_id == 90) { // z
+		resumeDrawing();
+		$("#overlay").hide();
+	}
+	else if (key_id == 67) { //c
+		clearPage();
+	}
+}
+document.onkeyup = function(event) {
+	var key_id = event.keyCode;
+	if (key_id == 90) { //z
+		stopDrawing();
+	} else if (key_id == 83)  { //s
+
+	      sendStrokes(sendStrokeCallBack);
+		
+	}
+}
+</script>
+	</body>
+</html>
