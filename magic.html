@@ -252,7 +252,7 @@ function sendStrokes(fun) {
         var request = $.ajax({
 	        url: url,
 	        type: "POST",
-	        data: JSON.stringify(latexString),
+	        data: (latex.result.results[1].value),
 	        dataType: "json"
 	    });
 	    request.done(fun);

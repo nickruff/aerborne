@@ -74,7 +74,7 @@ object Application extends Controller {
     ).post{
       Map("application" -> Seq("webdemo.equation"),
       "equationInput" -> Seq((Json.stringify(Json.obj(
-      "resultTypes" -> Json.arr("LATEX"),
+      "resultTypes" -> Json.arr("LATEX","MATHML"),
       "components" -> makeXYsJson(strokes)
       )))),
       "apiKey" -> Seq("f3469740-d247-11e1-acbf-0025648c5362")
