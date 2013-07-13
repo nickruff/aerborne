@@ -10,9 +10,10 @@ import java.net.{URLDecoder, URLEncoder}
 import scala.concurrent.Future
 import play.api.libs.iteratee.{Enumerator, Iteratee}
 import play.api.libs.concurrent.Promise
-import com.codahale.jerkson
 
 object Application extends Controller {
+
+  implicit val positionFmt = Json.format[Position]
   
   def index = Action {
     Ok(views.html.index("Your new application is ready."))
@@ -32,15 +33,18 @@ object Application extends Controller {
   }
 
   def evaluatePosSequence = Action(parse.tolerantText) { implicit request =>
-    Logger.debug(URLDecoder.decode(request.body))
     Async {
+        val bad = Promise.pure(BadRequest("None of the strokes provided were valid"))
         try {
-          val strokes = jerkson.Json.parse[Seq[Seq[Position]]](request.body)
-          latex(strokes) map {s => Ok(s)}
+          val strokes = Json.fromJson[Seq[Seq[Position]]](Json.parse(request.body))
+          strokes.asOpt match {
+            case Some (_strokes) => latex(_strokes) map {s => Ok(s)}
+            case None => bad
+          }
         } catch {
           case e: Exception =>
             Logger.warn(e.toString)
-            Promise.pure(BadRequest("None of the strokes provided were valid"))
+            bad
         }
     }
   }

@@ -175,11 +175,11 @@ function resumeDrawing() {
 }
 
 function sendStrokes() {
-	var url = 'http://localhost:9000/'
+	var url = 'http://localhost:9000/evalposseq';
     var request = $.ajax({
         url: url,
         type: "POST",
-        data: {data : JSON.stringify(strokes)},
+        data: JSON.stringify(strokes),
         dataType: "json"
     });
         
