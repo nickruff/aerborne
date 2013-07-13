@@ -239,6 +239,19 @@ $(document).ready(function() {
         xs = [];
         ys = [];
         // do stuff
+        // evalposseq
+        var url = 'http://10.16.23.122:9000/'
+        var request = $.ajax({
+          url: url,
+          type: "POST",
+          data: {data : strokes},
+          dataType: "json"
+        });
+        
+        request.done(function(latex) {
+          console.log(latex);
+        });
+        
         
     }).mousemove(function(event){
         if (get) {
