@@ -274,47 +274,50 @@ document.onkeyup = function(event) {
 	        };
 	      })();
 
-      function animate() {
-
-        // update
-
-        // clear
-        //ctx.clearRect(a, b, a+20, b+10);
-
-        // draw stuff
-        if (ai <= a + 20) {
-        ctx.beginPath();
-        ctx.moveTo(a,b);
-        ctx.lineTo(ai,b);
-        ctx.stroke();
-    } else {
-        
-        ctx.beginPath();
-        ctx.moveTo(a,b+10);
-        ctx.lineTo(ai-20,b+10);
-        ctx.stroke();
-    }
-
-        ai += 1;
-        // request new frame
-        if (ai <= a + 40) {
-	        requestAnimFrame(function() {
-	          animate();
-	        });
-    	}
-      }
-      animate();
-        // draw equal sign
-        
-
-
-		sendStrokes(function(data){
+	      sendStrokes(function(data){
 			lol = data
 			console.log(data, a+30, b);
 			ctx.textBaseline = "10px";
 			ctx.font = 'italic 30pt Calibri';
+			ctx.color = 'black';
+			ctx.fillStyle = '#000000';
 			ctx.fillText(data[0].result, a+30, b+15);
 		});
+
+	      function animate() {
+
+	        // update
+
+	        // clear
+	        //ctx.clearRect(a, b, a+20, b+10);
+
+			ctx.color = 'black';
+			ctx.fillStyle = '#000000';
+	        // draw stuff
+	        if (ai <= a + 20) {
+		        ctx.beginPath();
+		        ctx.moveTo(a,b);
+		        ctx.lineTo(ai,b);
+		        ctx.stroke();
+		    } else {
+		        
+		        ctx.beginPath();
+		        ctx.moveTo(a,b+10);
+		        ctx.lineTo(ai-20,b+10);
+		        ctx.stroke();
+		    }
+
+	        ai += 1;
+	        // request new frame
+	        if (ai <= a + 40) {
+		        requestAnimFrame(function() {
+		          animate();
+		        });
+	    	}
+	      }
+	      animate();
+
+		
 	}
 }
 </script>
