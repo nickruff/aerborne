@@ -57,9 +57,9 @@ class WolframAlpha {
 //                          case ele: WAFutureTopic => Some("Future Topic : YO : " + ele.getTopic)
                           case _ => None
                         }
-                      }.fold("")(_+" "+_).tail
-                    }.fold("")(_+"\n"+_).tail
-                    Some(ResultPod(pod.getTitle, content.tail))
+                      }.mkString(" ")
+                    }.mkString("\n")
+                    Some(ResultPod(pod.getTitle, content))
                 }
               }
               podHierarchy toSeq

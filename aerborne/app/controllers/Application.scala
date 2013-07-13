@@ -24,7 +24,7 @@ object Application extends Controller {
     val latex = request.body
     val resultPods = wolf.evalLatex(latex)
     val jsonString = Json.stringify(Json.arr(resultPods map {resultPod => resultPod.toJson}))
-    Ok(jsonString.substring(1, jsonString.length).trim).as("application/json")
+    Ok(jsonString.substring(1, jsonString.length-1).trim)
   }
 
   def eventSocket = WebSocket.using[String] { request =>
