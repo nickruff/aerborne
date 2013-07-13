@@ -179,7 +179,7 @@ function resumeDrawing() {
 	eraseLastCursor();
 }
 
-function sendStrokes() {
+function sendStrokes(fun) {
 	stopDrawing();
 	var url = 'http://localhost:9000/evalposseq';
     var request = $.ajax({
@@ -191,7 +191,14 @@ function sendStrokes() {
         
     request.done(function(latex) {
         console.log(latex);
-        alert(latex.result.results[0].value);
+        var url = 'http://localhost:9000/evallatex';
+        var request = $.ajax({
+	        url: url,
+	        type: "POST",
+	        data: JSON.stringify(latex.result.results[0].value),
+	        dataType: "json"
+	    });
+	    request.done(fun);
     });
 }
 
@@ -210,7 +217,45 @@ document.onkeyup = function(event) {
 	if (key_id == 90) { //z
 		stopDrawing();
 	} else if (key_id == 83)  { //s
-		sendStrokes();
+		// find bounding box on strokes
+        var minx = strokes[0][0].x, miny = strokes[0][0].y, maxx = strokes[0][1].x, maxy = strokes[0][1].y;
+        for (var i = 0; i < strokes.length; i++) {
+            var stroke = strokes[i];
+            for (var j = 0; j < stroke.length; j++) {
+                var x = stroke[j].x;
+                var y = stroke[j].y;
+                if (x < minx) {
+                    minx = x;
+                }
+                if (x > maxx) {
+                    maxx = x;
+                }
+                if (y < miny) {
+                    miny = y;
+                }
+                if (y > maxy) {
+                    maxy = y;
+                }
+            }
+        }
+        console.log(minx,miny,maxx,maxy);
+        var a = maxx + 30;
+        var b = (maxy + miny)/2;
+        // draw equal sign
+        ctx.beginPath();
+        ctx.moveTo(a,b);
+        ctx.lineTo(a+20,b);
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(a,b+10);
+        ctx.lineTo(a+20,b+10);
+        ctx.stroke();
+
+
+		sendStrokes(function(data){
+			console.log(data, a+30, b);
+		});
 	}
 }
 </script>
