@@ -15,13 +15,29 @@
 	<body>
 		<p class='center'>Aerborne Bitch</p>
 		<div id='logger'></div>
+		<div id='container' class='fill'>
+			<div id="overlay" style="display:none;font-size: 200%;color:#aaa">
+				$\frac{5}{3}$	
+			</div>
+		</div>
 		<input type='button' name='Clear' value='Clear' onclick='clearPage();'></input>
 		<input type='button' name='Eval' value='Eval' onclick='sendStrokes();'></input>
 		<div id='container' class='fill'>
 		</div>
 		<script src="http://js.leapmotion.com/0.2.0-beta3/leap.js"></script>
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
 		<script src="ui/js/d3.js"> </script>
+
+		<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+		<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+		
 		<script>
 // Setup Leap loop with frame callback function
 var controllerOptions = { enableGestures: true },
@@ -223,6 +239,8 @@ function sendStrokes(fun) {
         
     request.done(function(latex) {
         console.log(latex);
+        $("#overlay").text("$"+latex.result.results[0].value+"$");
+        MathJax.Hub.Queue(["Typeset",MathJax.Hub,"overlay"]);
         var url = 'http://localhost:9000/evallatex';
         var request = $.ajax({
 	        url: url,
@@ -234,14 +252,24 @@ function sendStrokes(fun) {
     });
 }
 
+function getPosRelCanvas(x,y) {
+	return [width/2 + x, height/2 + y];
+}
+
+function getPosRelPage(x,y) {
+	return [x - width/2, y - height/2];
+}
+
 document.onkeydown = function(event) {
 	var key_id = event.keyCode;
 	//alert("pressed "+key_id);
 	if (key_id == 90) { // z
 		resumeDrawing();
+		$("#overlay").hide();
 	}
 	else if (key_id == 67) { //c
 		clearPage();
+		$("#overlay").hide();
 	}
 }
 document.onkeyup = function(event) {
@@ -283,15 +311,25 @@ document.onkeyup = function(event) {
 	        };
 	      })();
 
+	      // uncomment this block
+	      relpos = getPosRelCanvas((maxx+minx)/2,miny-10);
+		  $("#overlay").css("left",relpos[0]).css("top",relpos[1]).css("position","absolute").show();
+		  $("#overlay").text("$\\frac{7}{3}$");
+		  MathJax.Hub.Queue(["Typeset",MathJax.Hub,"overlay"]);
+
+
 	      sendStrokes(function(data){
-			lol = data
-			console.log(data, a+30, b);
-			ctx.textBaseline = "10px";
-			ctx.font = 'italic 30pt Calibri';
-			ctx.color = 'black';
-			ctx.fillStyle = '#000000';
-			ctx.fillText(data[0].result, a+30, b+15);
-		});
+			  lol = data
+			  console.log(data, a+30, b);
+			  ctx.textBaseline = "10px";
+			  ctx.font = 'italic 30pt Calibri';
+			  ctx.color = 'black';
+			  ctx.fillStyle = '#000000';
+			  ctx.fillText(data[0].result, a+30, b+15);
+
+			  relpos = getPosRelCanvas((maxx+minx)/2,miny-10);
+		  	  $("#overlay").css("left",relpos[0]).css("top",relpos[1]).css("position","absolute").show();
+		  });
 
 	      function animate() {
 
