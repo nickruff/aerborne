@@ -242,7 +242,7 @@ function sendStrokes(fun) {
     });
 
     request.done(function(latex) {
-    	var latexString = latex.result.results[0].value.replace(/\s+/g, '');
+    	var latexString = latex.result.results[0].value;//.replace(/\s+/g, '');
         console.log(latexString);
         $("#overlay").text("$"+latexString+"$");
         latexString = latexString.replace(/[{}]/g, '');
