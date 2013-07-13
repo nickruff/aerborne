@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+
+        <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+        <link rel="stylesheet" href="css/normalize.css">
+        <link rel="stylesheet" href="css/main.css">
+        <script src="js/vendor/modernizr-2.6.2.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $('#canvas').each(function(){
+                    console.log(this);
+                    this.width = $(this).width();
+                    this.height = $(this).height();
+                });
+                var xs = [];
+                var ys = [];
+                var get = false;
+                var canvas = $("#canvas")[0]; 
+                var strokes = [];
+                $("#canvas").mousedown(function(event) {
+                    console.log(event);
+                    if (event.ctrlKey){
+                        // delete
+                        var id = lookFor(event, strokes)[0];
+                        console.log(id);
+                        strokes.splice(id,1);
+                        drawAll(canvas,strokes);
+                    } else {
+                        get = true;
+                        var xy = getPosition(event);
+                        xs=[xy[0]];
+                        ys=[xy[1]];
+                    }
+                }).mouseup(function() {
+                    get = false;
+                    strokes.push([xs,ys]);
+                    xs = [];
+                    ys = [];
+                }).mousemove(function(event){
+                    if (get) {
+                        var xy = getPosition(event);
+                        xs.push(xy[0]);
+                        ys.push(xy[1]);
+                        console.log(strokes.concat([[xs,ys]]))
+                        drawAll(canvas,strokes.concat([[xs,ys]]))
+                    } else {
+                        // look for and highlight
+                        var closest_id = lookFor(event, strokes)[0];
+                        if (closest_id >= 0) {
+                            drawAllHighlight(canvas,strokes,closest_id);    
+                        } else {
+                            drawAll(canvas,strokes);
+                        }
+                    }
+                });
+            });
+            
+            function lookFor(event, strokes) {
+                var closest_id = -1;
+                var closest_dist = 1000;
+                var xy = getPosition(event);
+                for (var i = 0; i < strokes.length; i++) {
+                    var stroke = strokes[i];
+                    var xxs = stroke[0];
+                    var yys = stroke[1];
+                    // compute closest in here
+                    if (xxs == undefined) {
+                        return [-1, closest_dist];
+                    }
+                    for (var j = 0; j < xxs.length; j++) {
+                        var dx = xxs[j]-xy[0];
+                        var dy = yys[j]-xy[1];
+                        var d = dx*dx + dy*dy;
+                        if (d < closest_dist) {
+                            closest_dist = d;
+                            closest_id = i;
+                        }
+                    }
+                }
+                
+                return [closest_id, closest_dist];
+            }
+            
+            function getPosition(e) {
+                //this section is from http://www.quirksmode.org/js/events_properties.html
+                var targ;
+                if (!e)
+                    e = window.event;
+                if (e.target)
+                    targ = e.target;
+                else if (e.srcElement)
+                    targ = e.srcElement;
+                if (targ.nodeType == 3) // defeat Safari bug
+                    targ = targ.parentNode;
+
+                // jQuery normalizes the pageX and pageY
+                // pageX,Y are the mouse positions relative to the document
+                // offset() returns the position of the element relative to the document
+                var x = e.pageX - $(targ).offset().left;
+                var y = e.pageY - $(targ).offset().top;
+
+                return [x,y];
+            };
+            
+            function draw(canvas,xs, ys, color) {
+                var ctx = canvas.getContext('2d');
+                ctx.beginPath();
+                ctx.strokeStyle = color;
+                ctx.moveTo(xs[0],ys[0]);
+                for (var i = 0; i < xs.length; i += 1) {
+                    ctx.lineTo(xs[i],ys[i]);
+                }
+                ctx.stroke();
+                ctx.closePath();
+            }
+            
+            function clear(canvas) {
+                canvas.width = canvas.width;
+            }
+            
+            function drawAll(canvas, strokes) {
+                clear(canvas);
+                var ctx = canvas.getContext('2d');
+                
+                for (var i = 0; i < strokes.length; i++) {
+                    var stroke = strokes[i];
+                    draw(canvas, stroke[0], stroke[1], "black");
+                }
+            }
+            
+            function drawAllHighlight(canvas, strokes, j) {
+                for (var i = 0; i < strokes.length; i++) {
+                    var stroke = strokes[i];
+                    if (i != j) {
+                        draw(canvas, stroke[0], stroke[1], "black");
+                    } else {
+                        draw(canvas, stroke[0], stroke[1], "blue");
+                    }
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+        <![endif]-->
+
+        <!-- Add your site or application content here -->
+        <canvas id="canvas" style="width:100%;height:100%">
+            
+        </canvas>
+        <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.9.1.min.js"><\/script>')</script>
+        <script src="js/plugins.js"></script>
+        <script src="js/main.js"></script>
+    </body>
+</html>
