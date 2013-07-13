@@ -14,9 +14,17 @@ import play.api.libs.concurrent.Promise
 object Application extends Controller {
 
   implicit val positionFmt = Json.format[Position]
+  val wolf = new WolframAlpha
   
   def index = Action {
     Ok(views.html.index("Your new application is ready."))
+  }
+
+  def evalWolfLatex = Action(parse.tolerantText) { implicit request =>
+    val latex = request.body
+    val resultPods = wolf.evalLatex(latex)
+    val jsonString = Json.stringify(Json.arr(resultPods map {resultPod => resultPod.toJson}))
+    Ok(jsonString.substring(1, jsonString.length).trim).as("application/json")
   }
 
   def eventSocket = WebSocket.using[String] { request =>
@@ -28,7 +36,7 @@ object Application extends Controller {
     }
 
     // Send a single 'Hello!' message
-    val out = Enumerator.imperative[String]()
+    val out = Enumerator[String]("Hello")
     (in, out)
   }
 
