@@ -61,6 +61,7 @@ function dlog(txt) {
 		num_log = 0;
 	}
 	//document.getElementById("logger").innerHTML += txt;
+	//console.log(txt);
 }
 
 function clearPage() {
@@ -97,9 +98,9 @@ function drawStroke(startX, startY, endX, endY) {
     ctx.lineTo(endX, endY);
     ctx.stroke();
     if (curStroke.length == 0) {
-    	curStroke.push([startX, startY]);
+    	curStroke.push({x:startX, y:startY});
     }
-    curStroke.push([endX, endY]);
+    curStroke.push({x:endX, y:endY});
 }
 
 function draw() {
@@ -148,7 +149,7 @@ Leap.loop(controllerOptions, function(frame, done) {
     for (var i = 0; i < frame.pointables.length; i++) {
     	var tempid = frame.pointables[i].id;
         after[tempid] = frame.pointables[i];
-        dlog(tempid);
+        //dlog(tempid);
     }
     draw();
     done();
@@ -157,13 +158,33 @@ Leap.loop(controllerOptions, function(frame, done) {
 function stopDrawing() {
 	draw_bool = false;
 	before = after = {};
-	strokes.push(curStroke);
-	curStroke = [];
+	if (curStroke.length > 0) {
+		strokes.push(curStroke);
+		console.log("Pushing Stroke:");
+		console.log(curStroke);
+		curStroke = [];
+		console.log("strokes:");
+		console.log(strokes);
+	}
 }
 
 function resumeDrawing() {
 	draw_bool = true;
 	eraseLastCursor();
+}
+
+function sendStrokes() {
+	var url = 'http://10.16.23.122:9000/'
+    var request = $.ajax({
+        url: url,
+        type: "POST",
+        data: {data : strokes},
+        dataType: "json"
+    });
+        
+    request.done(function(latex) {
+        console.log(latex);
+    });
 }
 
 document.onkeydown = function(event) {
@@ -180,6 +201,8 @@ document.onkeyup = function(event) {
 	var key_id = event.keyCode;
 	if (key_id == 90) { //z
 		resumeDrawing();
+	} else if (key_id == 83)  { //s
+		sendStrokes();
 	}
 }
 </script>
