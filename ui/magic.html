@@ -1,0 +1,167 @@
+<html>
+	<head>
+		<title>
+			AERBORNE
+		</title>
+		<style type="text/css" media="screen">
+			html, body {
+				height: 100%;
+			}
+			#fill {
+				min-height: 100%;
+			}
+		</style>
+	</head>
+	<body>
+		<p class='center'>Aerborne Bitch</p>
+		<div id='logger'></div>
+		<div id='container' class='fill'>
+		</div>
+		<script src="http://js.leapmotion.com/0.2.0-beta3/leap.js"></script>
+		<script>
+	
+		</script>
+		<script>
+// Setup Leap loop with frame callback function
+var controllerOptions = { enableGestures: true },
+    width = 1000,
+    height = 1200,
+    canvas = d3.select('div#container')
+        .append('canvas')
+        .attr('width', width)
+        .attr('height', height).node(),
+    ctx = canvas.getContext('2d'),
+    before = {},
+    after = {},
+    draw_id = -1,
+    last_log = -1,
+    num_log = 0,
+    draw_bool = 1,
+    eraseX = -1,
+    eraseY = -1,
+    color = d3.scale.category20();
+
+ctx.lineWidth = 3;
+ctx.translate(width/2, height/2);
+
+function dlog(txt) {
+	if (txt == last_log) return;
+	last_log = txt;
+	if (num_log < 80) {
+		txt += ",";
+		num_log++;
+	} else {
+		txt += "<BR/>";
+		num_log = 0;
+	}
+	//document.getElementById("logger").innerHTML += txt;
+}
+
+function clearPage() {
+	// Store the current transformation matrix
+	ctx.save();
+
+	// Use the identity matrix while clearing the canvas
+	ctx.setTransform(1, 0, 0, 1, 0, 0);
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+	// Restore the transform
+	ctx.restore();
+}
+
+function smallCircle(x, y, color, radius) {
+	ctx.beginPath();
+	ctx.arc(x, y, radius, 0, 2*Math.PI, false);
+	ctx.fillStyle = ctx.strokeStyle = color;
+	ctx.fill();
+	ctx.stroke();
+}
+
+function drawCursor() {
+	smallCircle(eraseX, eraseY, 'gray', 3);
+}
+
+function eraseLastCursor() {
+	smallCircle(eraseX, eraseY, 'white', 4);
+}
+
+function drawStroke(startX, startY, endX, endY) {
+	ctx.beginPath();
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(endX, endY);
+    ctx.stroke();
+}
+
+function draw() {
+    var a, b;
+    for (var id in after) {
+        b = before[id],
+        a = after[id];
+        if (draw_id < 0) {
+        	draw_id = id;
+        	dlog("draw_id:"+draw_id);
+        }
+        if (!draw_bool) {
+        	// erase circle centered on eraseX, eraseY
+        	eraseLastCursor();
+    	}
+        if (draw_id == id && b) {
+        	ctx.strokeStyle = color(id);
+        	var startX = b.tipPosition[0],
+        		startY = -b.tipPosition[1],
+        		endX = a.tipPosition[0],
+        		endY = -a.tipPosition[1];
+        	
+        	if (draw_bool) {
+        		drawStroke(startX, startY, endX, endY);
+        		eraseX = eraseY = -1;
+        	} else {
+        		eraseX = endX;
+        		eraseY = endY;
+        		// draw circle centered on eraseX, eraseY
+        		drawCursor();
+        	}
+        	
+    	}
+    	if (!b) {
+    		draw_id = -1;
+    	}
+    }
+
+    before = after;
+
+    return true;
+}
+
+Leap.loop(controllerOptions, function(frame, done) {
+    after = {};
+    for (var i = 0; i < frame.pointables.length; i++) {
+    	var tempid = frame.pointables[i].id;
+        after[tempid] = frame.pointables[i];
+        dlog(tempid);
+    }
+    draw();
+    done();
+});
+
+document.onkeydown = function(event) {
+	var key_id = event.keyCode;
+	//alert("pressed "+key_id);
+	if (key_id == 90) { // z
+		draw_bool = false;
+		before = after = {};
+	}
+	else if (key_id == 67) { //c
+		clearPage();
+	}
+}
+document.onkeyup = function(event) {
+	var key_id = event.keyCode;
+	if (key_id == 90) { //z
+		draw_bool = true;
+		eraseLastCursor();
+	}
+}
+</script>
+	</body>
+</html>
