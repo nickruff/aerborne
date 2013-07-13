@@ -61,6 +61,7 @@ function dlog(txt) {
 		num_log = 0;
 	}
 	//document.getElementById("logger").innerHTML += txt;
+	console.log(txt);
 }
 
 function clearPage() {
@@ -273,12 +274,37 @@ $(document).ready(function() {
     });
 });
 
+function stopDrawing() {
+	draw_bool = false;
+	before = after = {};
+    if (xs.length > 0) {
+        // push this onto strokes
+        strokes.push([xs,ys]);
+        xs = [];
+        ys = [];
+    }
+}
+
+function resumeDrawing() {
+	draw_bool = true;
+	eraseLastCursor();
+    xs = [xy[0]];
+    ys = [xy[1]];
+}
+
 Leap.loop(controllerOptions, function(frame, done) {
     after = {};
     for (var i = 0; i < frame.pointables.length; i++) {
     	var tempid = frame.pointables[i].id;
         after[tempid] = frame.pointables[i];
+        //dlog("z:"+after[tempid].tipPosition[2]);
         dlog(tempid);
+        var z = after[tempid].tipPosition[2];
+        if (z > 0 && draw_bool) {
+        	stopDrawing();
+        } else if (z <= 0 && !draw_bool) {
+        	resumeDrawing();
+        }
     }
     for (var i=0; i<frame.gestures.length; i++) {
     	if (frame.gestures[i].type == "swipe") {
@@ -296,14 +322,7 @@ document.onkeydown = function(event) {
 	//alert("pressed "+key_id);
 	if (key_id == 90) { // z
         // end a stroke
-		draw_bool = false;
-		before = after = {};
-        if (xs.length > 0) {
-            // push this onto strokes
-            strokes.push([xs,ys]);
-            xs = [];
-            ys = [];
-        }
+		stopDrawing();
 	}
 	else if (key_id == 67) { //c
 		clearPage();
@@ -313,10 +332,7 @@ document.onkeyup = function(event) {
 	var key_id = event.keyCode;
 	if (key_id == 90) { //z
         // start another stroke
-		draw_bool = true;
-		eraseLastCursor();
-        xs = [xy[0]];
-        ys = [xy[1]];
+		resumeDrawing();
 	}
 }
 </script>
