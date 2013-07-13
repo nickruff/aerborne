@@ -13,11 +13,11 @@
 		</style>
 	</head>
 	<body>
-		<p class='center'>Aerborne Bitch</p>
+		<p class='center'>Aerborne</p>
 		<div id='logger'></div>
 		<div id='container' class='fill'>
 			<div id="overlay" style="display:none;font-size: 200%;color:#aaa">
-				$\frac{5}{3}$	
+				$\frac{5}{3}$
 			</div>
 		</div>
 		<input type='button' name='Clear' value='Clear' onclick='clearPage();'></input>
@@ -37,7 +37,7 @@ MathJax.Hub.Config({
 		<script type="text/javascript"
   src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
 </script>
-		
+
 		<script>
 // Setup Leap loop with frame callback function
 var controllerOptions = { enableGestures: true },
@@ -155,7 +155,7 @@ function draw() {
         	active_finger_id = id;
         	dlog("active_finger_id:"+active_finger_id);
         }
-        
+
     	// redraw everything here
         if (active_finger_id == id && b) {
         	ctx.strokeStyle = color(id);
@@ -163,7 +163,6 @@ function draw() {
         		startY = -b.tipPosition[1],
         		endX = a.tipPosition[0],
         		endY = -a.tipPosition[1];
-        	//console.log(b.tipPosition[2]);
         	if (draw_bool) {
         		drawStroke(startX, startY, endX, endY);
         		eraseX = eraseY = -1;
@@ -173,7 +172,7 @@ function draw() {
         		// draw circle centered on eraseX, eraseY
         		drawCursor();
         	}
-        	
+
     	}
     	if (!b) {
     		active_finger_id = -1;
@@ -241,7 +240,7 @@ function sendStrokes(fun) {
         data: JSON.stringify(strokes),
         dataType: "json"
     });
-        
+
     request.done(function(latex) {
     	var latexString = latex.result.results[0].value.replace(/\s+/g, '');
         console.log(latexString);
@@ -291,7 +290,7 @@ function sendStrokeCallBack(data){
 	console.log(minx,miny,maxx,maxy);
 	var a = maxx + 30;
 	var b = (maxy + miny)/2;
-  	
+
 	  ctx.textBaseline = "10px";
 	  ctx.font = 'italic 30pt Calibri';
 	  ctx.color = 'black';
@@ -338,7 +337,7 @@ function sendStrokeCallBack(data){
 		        ctx.lineTo(ai,b);
 		        ctx.stroke();
 		    } else {
-		        
+
 		        ctx.beginPath();
 		        ctx.moveTo(a,b+10);
 		        ctx.lineTo(ai-20,b+10);
@@ -373,7 +372,7 @@ document.onkeyup = function(event) {
 		stopDrawing();
 	} else if (key_id == 83)  { //s
 		// find bounding box on strokes
-        
+
 		var minx = strokes[0][0].x, miny = strokes[0][0].y, maxx = strokes[0][1].x, maxy = strokes[0][1].y;
 	for (var i = 0; i < strokes.length; i++) {
 	    var stroke = strokes[i];
@@ -398,7 +397,7 @@ document.onkeyup = function(event) {
 	var a = maxx + 30;
 	var b = (maxy + miny)/2;
 
-        
+
 
 	      // uncomment this block
 	      //relpos = getPosRelCanvas((maxx+minx)/2,miny-10);
@@ -409,9 +408,9 @@ document.onkeyup = function(event) {
 
 	      sendStrokes(sendStrokeCallBack);
 
-	      
 
-		
+
+
 	}
 }
 </script>
