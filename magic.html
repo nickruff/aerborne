@@ -41,7 +41,7 @@ var controllerOptions = { enableGestures: true },
     active_finger_id = -1,
     last_log = -1,
     num_log = 0,
-    draw_bool = 1,
+    draw_bool = false,
     eraseX = -1,
     eraseY = -1,
     strokes = [],
@@ -194,7 +194,7 @@ document.onkeydown = function(event) {
 	var key_id = event.keyCode;
 	//alert("pressed "+key_id);
 	if (key_id == 90) { // z
-		stopDrawing();
+		resumeDrawing();
 	}
 	else if (key_id == 67) { //c
 		clearPage();
@@ -203,7 +203,7 @@ document.onkeydown = function(event) {
 document.onkeyup = function(event) {
 	var key_id = event.keyCode;
 	if (key_id == 90) { //z
-		resumeDrawing();
+		stopDrawing();
 	} else if (key_id == 83)  { //s
 		sendStrokes();
 	}
