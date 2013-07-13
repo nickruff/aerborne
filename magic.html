@@ -186,7 +186,7 @@ function sendStrokes() {
         
     request.done(function(latex) {
         console.log(latex);
-        alert(latex);
+        alert(latex.result.results[0].value);
     });
 }
 
