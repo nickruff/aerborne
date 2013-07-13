@@ -18,7 +18,7 @@ class WolframAlpha {
   engine.setAppID("LAJ6HJ-E9YQEA8VAG")
   engine.addFormat("plaintext")
 
-  val fail = Seq(ResultPod("Sorry bro", "No one understands what you're trying to say"))
+  val fail = Seq(ResultPod("Try", "Again"))
 
   implicit val resultPodFmt = Json.format[ResultPod]
   case class ResultPod(title: String, result: String) {
