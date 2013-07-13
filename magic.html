@@ -31,7 +31,7 @@ if(null!=c)if(Math.abs(c-e)+Math.abs(f-r)<.01)l(n,t,e,r,u,i,a,o);else{var s=n.po
 		<script>
 // Setup Leap loop with frame callback function
 var controllerOptions = { enableGestures: true },
-    width = 1000,
+    width = 1200,
     height = 1200,
     canvas = d3.select('div#container')
         .append('canvas')
@@ -241,20 +241,56 @@ document.onkeyup = function(event) {
         console.log(minx,miny,maxx,maxy);
         var a = maxx + 30;
         var b = (maxy + miny)/2;
-        // draw equal sign
+
+
+        var ai = a;
+        window.requestAnimFrame = (function(callback) {
+	        return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
+	        function(callback) {
+	          window.setTimeout(callback, 1000 / 60);
+	        };
+	      })();
+
+      function animate() {
+
+        // update
+
+        // clear
+        //ctx.clearRect(a, b, a+20, b+10);
+
+        // draw stuff
+        if (ai <= a + 20) {
         ctx.beginPath();
         ctx.moveTo(a,b);
-        ctx.lineTo(a+20,b);
+        ctx.lineTo(ai,b);
         ctx.stroke();
+    } else {
         
         ctx.beginPath();
         ctx.moveTo(a,b+10);
-        ctx.lineTo(a+20,b+10);
+        ctx.lineTo(ai-20,b+10);
         ctx.stroke();
+    }
+
+        ai += 1;
+        // request new frame
+        if (ai <= a + 40) {
+	        requestAnimFrame(function() {
+	          animate();
+	        });
+    	}
+      }
+      animate();
+        // draw equal sign
+        
 
 
 		sendStrokes(function(data){
+			lol = data
 			console.log(data, a+30, b);
+			ctx.textBaseline = "10px";
+			ctx.font = 'italic 30pt Calibri';
+			ctx.fillText(data[0].result, a+30, b+15);
 		});
 	}
 }
