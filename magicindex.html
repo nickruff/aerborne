@@ -14,11 +14,14 @@
         .flex {position:relative;width:850px;min-height:300px;margin:0 auto;border:0px solid red;margin-top:10px;}
         .flex a {background-color:white;display:block;width:100px;height:100px;border-radius:8px;position:absolute;background-repeat:no-repeat;background-position:center;border:3px solid white;cursor:pointer;text-align:left;text-shadow:1px 1px 20px #000;color:white;font-size:18px;font-weight:bold;text-indent:10px;line-height:30px;}
         .flex div {margin-top:50px;margin-left:10px;margin-right:15px;margin-bottom:15px;display:block;width:250px;height:100px;position:absolute;background-repeat:no-repeat;background-position:center;cursor:pointer;text-align:left;text-shadow:1px 1px 2px #000;color:white;font-size:18px;font-weight:bold;text-indent:10px;line-height:30px;}
-        [bg=a] {background-image:url(http://farm8.staticflickr.com/7013/6448917381_0b754e86fb_z.jpg);}
+        [bg=a] {background-image:url(bg1.png);}
+
     </style>
 		<style type="text/css" media="screen">
 			html, body {
 				height: 100%;
+				background-image: url(brickwall.png);
+				background-repeat: repeat;
 			}
 			#fill {
 				min-height: 100%;
@@ -38,6 +41,10 @@
 				padding: 16px;
 				margin-bottom: 10px;
 				margin-top: 10px;
+			}
+
+			canvas {
+				background-color: #fff;
 			}
 		</style>
 	</head>
@@ -136,7 +143,7 @@ MathJax.Hub.Config({
 		<script>
 // Setup Leap loop with frame callback function
 var controllerOptions = { enableGestures: true },
-    width = 1200,
+    width = 940,
     height = 500,
     canvas = d3.select('div#container')
         .append('canvas')
@@ -340,7 +347,7 @@ function sendStrokes(fun) {
     	var latexString = latex.result.results[0].value;//.replace(/\s+/g, '');
         console.log(latexString);
 
-        $("#overlay").text("$"+latexString+"$");
+        //$("#overlay").text("$"+latexString+"$");
         $("#latprev").text("$"+latexString+"$");
         $("#lat").text("$"+latexString+"$");
         latexString = latexString.replace(/[{}]/g, '');
@@ -409,8 +416,8 @@ function sendStrokeCallBack(data){
 	  	yjump += 40;
 	  }
 
-	  relpos = getPosRelCanvas((maxx+minx)/2 - 20,(miny+maxy)/2 - 20);
-  	  $("#overlay").css("left",relpos[0]).css("top",relpos[1]).css("position","absolute").show();
+	  //relpos = getPosRelCanvas((maxx+minx)/2 - 20,(miny+maxy)/2 - 20);
+  	  //$("#overlay").css("left",relpos[0]).css("top",relpos[1]).css("position","absolute").show();
 
   	  var ai = a;
         window.requestAnimFrame = (function(callback) {
