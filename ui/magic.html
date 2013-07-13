@@ -280,13 +280,6 @@ Leap.loop(controllerOptions, function(frame, done) {
         after[tempid] = frame.pointables[i];
         dlog(tempid);
     }
-    for (var i=0; i<frame.gestures.length; i++) {
-    	if (frame.gestures[i].type == "swipe") {
-    		//alert("SwipeGesture detected!");
-    	} else {
-    		//alert("Other gesture detected!");
-    	}
-    }
     drawX();
     done();
 });
