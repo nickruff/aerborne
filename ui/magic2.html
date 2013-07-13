@@ -282,7 +282,8 @@ $(document).ready(function() {
               url: url,
               type: "POST",
               data: {data : strokes},
-              dataType: "json"
+              dataType: "json",
+              crossDomain: true
             });
             
             request.done(function(latex) {
