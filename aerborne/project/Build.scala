@@ -11,7 +11,7 @@ object ApplicationBuild extends Build {
     // Add your project dependencies here,
     jdbc,
     anorm,
-    "com.codahale" % "jerkson_2.9.1" % "0.5.0",
+    "com.cloudphysics" %% "jerkson" % "0.6.2",
     "commons-codec" % "commons-codec" % "1.6",
     "org.apache.httpcomponents" % "httpclient" % "4.0.1",
     "org.apache.httpcomponents" % "httpcore" % "4.0.1",
