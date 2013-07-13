@@ -109,8 +109,32 @@ function drawStroke(startX, startY, endX, endY) {
     curStroke.push({x:endX, y:endY});
 }
 
+function redrawStroke(stroke) {
+	if (stroke.length <= 0) {
+		return;
+	}
+	for (var i = 0; i < stroke.length-1; i++) {
+		ctx.beginPath();
+		ctx.moveTo(stroke[i].x,stroke[i].y);
+		ctx.lineTo(stroke[i+1].x,stroke[i+1].y);
+		ctx.stroke();
+	}
+}
+
+function redrawStrokes() {
+	ctx.strokeStyle = 'black';
+	for (var i = 0; i < strokes.length; i++) {
+		redrawStroke(strokes[i]);
+	}
+}
+
 function draw() {
     var a, b;
+    if (!draw_bool) {
+        // erase circle centered on eraseX, eraseY
+        eraseLastCursor();
+        //redrawStrokes();
+    }
     for (var id in after) {
         b = before[id],
         a = after[id];
@@ -118,17 +142,15 @@ function draw() {
         	active_finger_id = id;
         	dlog("active_finger_id:"+active_finger_id);
         }
-        if (!draw_bool) {
-        	// erase circle centered on eraseX, eraseY
-        	eraseLastCursor();
-    	}
+        
+    	// redraw everything here
         if (active_finger_id == id && b) {
         	ctx.strokeStyle = color(id);
         	var startX = b.tipPosition[0],
         		startY = -b.tipPosition[1],
         		endX = a.tipPosition[0],
         		endY = -a.tipPosition[1];
-        	
+        	//console.log(b.tipPosition[2]);
         	if (draw_bool) {
         		drawStroke(startX, startY, endX, endY);
         		eraseX = eraseY = -1;
@@ -177,6 +199,7 @@ function stopDrawing() {
 function resumeDrawing() {
 	draw_bool = true;
 	eraseLastCursor();
+	redrawStrokes();
 }
 
 function sendStrokes(fun) {
