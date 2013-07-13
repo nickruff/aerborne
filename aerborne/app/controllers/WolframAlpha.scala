@@ -18,7 +18,7 @@ class WolframAlpha {
   engine.setAppID("LAJ6HJ-E9YQEA8VAG")
   engine.addFormat("plaintext")
 
-  val fail = Seq(ResultPod("Sorry bro", "No one understand what you're saying"))
+  val fail = Seq(ResultPod("Sorry bro", "No one understands what you're trying to say"))
 
   implicit val resultPodFmt = Json.format[ResultPod]
   case class ResultPod(title: String, result: String) {
@@ -48,13 +48,6 @@ class WolframAlpha {
                       subpod.getContents.flatMap {element =>
                         element match {
                           case ele: WAPlainText => Some(ele.getText)
-//                          case ele: WAImage => Some("Image : YO : " + ele.getURL)
-//                          case ele: WAUnits => Some("Units : YO : " + ele.getImage.getURL)
-//                          case ele: WARelatedLink => Some("Related Link : YO : " + ele.getText)
-//                          case ele: WASourceInfo => Some("Source Info : YO : " + ele.getFormattedURL)
-//                          case ele: WASound => Some("Sound : YO : " + ele.getURL)
-//                          case ele: WAInfo => Some("Info : YO : " + ele.getText)
-//                          case ele: WAFutureTopic => Some("Future Topic : YO : " + ele.getTopic)
                           case _ => None
                         }
                       }.mkString(" ")
